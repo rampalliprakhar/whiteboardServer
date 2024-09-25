@@ -23,6 +23,11 @@ io.on("connection", (socket) => {
     socket.on('changeConfig', (arg) => {
       socket.broadcast.emit('changeConfig', arg)
     })
+
+    socket.on('changeBackground', (info) => {
+      console.log('Changed background color: ', info)
+      socket.broadcast.emit('changeBackground', info)
+    })
   });
 
 httpServer.listen(5000);
