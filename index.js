@@ -15,26 +15,26 @@ let drawUsers = new Set();
 io.on("connection", (socket) => {
     console.log("server connected")
   
-    socket.on('startPosition', (userID) => {
-      drawUsers.add(userID);
+    socket.on('startPosition', (userId) => {
+      drawUsers.add(userId);
 
       if(drawUsers.size === 2){
         io.emit('alert', {message: 'Two users are drawing at the same time!'});
       }
-      socket.broadcast.emit('startPosition', userID)
+      socket.broadcast.emit('startPosition', userId)
     })
   
-    socket.on('draw', (arg) => {
-      socket.broadcast.emit('draw', arg)
-    })
+    socket.on('draw', ({ x, y, userId, color, size }) => {
+      socket.broadcast.emit('draw', { x, y, userId, color, size });
+  });
 
-    socket.on('stopDrawing', (userID) => {
-      drawUsers.delete(userID);
+    socket.on('stopDrawing', (userId) => {
+      drawUsers.delete(userId);
 
       if(drawUsers.size < 2){
         io.emit('alert', {message: 'No users are drawing at the same time.'});
       }
-      socket.broadcast.emit('stopDrawing', userID);
+      socket.broadcast.emit('stopDrawing', userId);
     })
   
     socket.on('changeConfig', (arg) => {
@@ -48,9 +48,9 @@ io.on("connection", (socket) => {
     
     socket.on('disconnect', () => {
       console.log("User Disconnected!");
-      drawUsers.forEach(userID => {
-        if(userID === socket.id){
-          drawUsers.delete(userID);
+      drawUsers.forEach(userId => {
+        if(userId === socket.id){
+          drawUsers.delete(userId);
         }
       });
     });
