@@ -10,15 +10,31 @@ app.use(cors({origin: URL}))
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: URL });
 
+let drawUsers = new Set();
+
 io.on("connection", (socket) => {
     console.log("server connected")
   
-    socket.on('startPosition', (arg) => {
-      socket.broadcast.emit('startPosition', arg)
+    socket.on('startPosition', (userID) => {
+      drawUsers.add(userID);
+
+      if(drawUsers.size === 2){
+        io.emit('alert', {message: 'Two users are drawing at the same time!'});
+      }
+      socket.broadcast.emit('startPosition', userID)
     })
   
     socket.on('draw', (arg) => {
       socket.broadcast.emit('draw', arg)
+    })
+
+    socket.on('stopDrawing', (userID) => {
+      drawUsers.delete(userID);
+
+      if(drawUsers.size < 2){
+        io.emit('alert', {message: 'No users are drawing at the same time.'});
+      }
+      socket.broadcast.emit('stopDrawing', userID);
     })
   
     socket.on('changeConfig', (arg) => {
@@ -30,6 +46,15 @@ io.on("connection", (socket) => {
       socket.broadcast.emit('changeBackground', info)
     })
     
+    socket.on('disconnect', () => {
+      console.log("User Disconnected!");
+      drawUsers.forEach(userID => {
+        if(userID === socket.id){
+          drawUsers.delete(userID);
+        }
+      });
+    });
+
     // socket.on('styleChange', (info) => {
     //   console.log('Server received style change:', info);
     //   socket.broadcast.emit('styleChange', info);
