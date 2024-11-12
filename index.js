@@ -1,13 +1,14 @@
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const app = express();
-const httpServer = createServer(app);
-
 const cors = require("cors");
-app.use(cors({origin: "http://localhost:3000/"}))
 
-const io = new Server(httpServer, {cors: "http://localhost:3000/"});
+const app = express();
+const isDev = app.settings.env === 'development'
+const URL = isDev ? 'http://localhost:3000' : 'https://whiteboard-two-gilt.vercel.app'
+app.use(cors({origin: URL}))
+const httpServer = createServer(app);
+const io = new Server(httpServer, { cors: URL });
 
 io.on("connection", (socket) => {
     console.log("server connected")
@@ -28,6 +29,11 @@ io.on("connection", (socket) => {
       console.log('Changed background color: ', info)
       socket.broadcast.emit('changeBackground', info)
     })
+    
+    // socket.on('styleChange', (info) => {
+    //   console.log('Server received style change:', info);
+    //   socket.broadcast.emit('styleChange', info);
+    // });
   });
 
 httpServer.listen(5000);
