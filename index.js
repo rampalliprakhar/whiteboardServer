@@ -14,7 +14,12 @@ app.use(cors({
 }))
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: allowedOrigin } });
+const io = new Server(httpServer, {
+  transports: ['websocket'],
+  cors: {
+    origin: allowedOrigin
+  }
+});
 
 let drawUsers = new Set();
 
