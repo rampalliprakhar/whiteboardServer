@@ -18,7 +18,9 @@ const io = new Server(httpServer, {
   transports: ['websocket'],
   cors: {
     origin: allowedOrigin
-  }
+  },
+  pingTimeout: 60000,
+  connectTimeout: 60000
 });
 
 let drawUsers = new Set();
@@ -29,22 +31,20 @@ io.on("connection", (socket) => {
     socket.on('startPosition', (userId) => {
       drawUsers.add(userId);
 
-      if(drawUsers.size === 2){
-        io.emit('alert', {message: 'Two users are drawing at the same time!'});
-      }
+      io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} currently drawing`});
       socket.broadcast.emit('startPosition', userId)
     })
   
     socket.on('draw', ({ x, y, userId, color, size }) => {
       socket.broadcast.emit('draw', { x, y, userId, color, size });
-  });
+    });
 
     socket.on('stopDrawing', (userId) => {
       drawUsers.delete(userId);
 
-      if(drawUsers.size < 2){
-        io.emit('alert', {message: 'No users are drawing at the same time.'});
-      }
+      // Update alert when there are no users drawing
+      const remainingUsers = drawUsers.size;
+      io.emit('alert', {message: `${remainingUsers} user${remainingUsers !== 1 ? 's' : ''} currently drawing`});
       socket.broadcast.emit('stopDrawing', userId);
     })
   
