@@ -7,7 +7,7 @@ const app = express();
 const isDev = process.env.NODE_ENV === 'development'
 const allowedOrigin = isDev 
   ? 'http://localhost:3000' 
-  : process.env.WEBSITE_URL;
+  : 'https://whiteboard-two-gilt.vercel.app';
 
 app.use(cors({
   origin: allowedOrigin
