@@ -20,18 +20,22 @@ const io = new Server(httpServer, {
     origin: allowedOrigin
   },
   pingTimeout: 60000,
-  connectTimeout: 60000
+  connectTimeout: 60000,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000
 });
 
 let drawUsers = new Set();
 
 io.on("connection", (socket) => {
     console.log("server connected")
+
+    // Add user when they connect
+    drawUsers.add(socket.id);
+    io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} connected`});    
   
     socket.on('startPosition', (userId) => {
-      drawUsers.add(userId);
-
-      io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} currently drawing`});
       socket.broadcast.emit('startPosition', userId)
     })
   
@@ -59,11 +63,8 @@ io.on("connection", (socket) => {
     
     socket.on('disconnect', () => {
       console.log("User Disconnected!");
-      drawUsers.forEach(userId => {
-        if(userId === socket.id){
-          drawUsers.delete(userId);
-        }
-      });
+      drawUsers.delete(socket.id);
+      io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} connected`});
     });
 
     // socket.on('styleChange', (info) => {
