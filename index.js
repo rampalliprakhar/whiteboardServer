@@ -35,12 +35,18 @@ io.on("connection", (socket) => {
     drawUsers.add(socket.id);
     io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} connected`});    
   
+    socket.on('joinSession', (sessionId) => {
+      socket.join(sessionId);
+      // Send the update only to the session room
+      socket.broadcast.to(sessionId).emit('userJoined', socket.id)
+    })
+
     socket.on('startPosition', (userId) => {
       socket.broadcast.emit('startPosition', userId)
     })
   
-    socket.on('draw', ({ x, y, userId, color, size }) => {
-      socket.broadcast.emit('draw', { x, y, userId, color, size });
+    socket.on('draw', ({ x, y, userId, color, size, sessionId }) => {
+      socket.broadcast.to(sessionId).emit('draw', { x, y, userId, color, size });
     });
 
     socket.on('stopDrawing', (userId) => {
@@ -52,13 +58,13 @@ io.on("connection", (socket) => {
       socket.broadcast.emit('stopDrawing', userId);
     })
   
-    socket.on('changeConfig', (arg) => {
-      socket.broadcast.emit('changeConfig', arg)
+    socket.on('changeConfig', ({ sessionId, ...config }) => {
+      socket.broadcast.to(sessionId).emit('changeConfig', config);
     })
 
-    socket.on('changeBackground', (info) => {
+    socket.on('changeBackground', ({ sessionId, ...info }) => {
       console.log('Changed background color: ', info)
-      socket.broadcast.emit('changeBackground', info)
+      socket.broadcast.to(sessionId).emit('changeBackground', info)
     })
     
     socket.on('disconnect', () => {
