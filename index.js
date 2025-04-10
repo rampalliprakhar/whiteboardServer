@@ -37,24 +37,21 @@ io.on("connection", (socket) => {
   
     socket.on('joinSession', (sessionId) => {
       socket.join(sessionId);
+      drawUsers.add(socket.id);
       // Send the update only to the session room
-      socket.broadcast.to(sessionId).emit('userJoined', socket.id)
+      io.to(sessionId).emit('userJoined', socket.id)
     })
 
     socket.on('startPosition', (userId) => {
       socket.broadcast.emit('startPosition', userId)
     })
   
-    socket.on('draw', ({ x, y, userId, color, size, sessionId }) => {
-      socket.broadcast.to(sessionId).emit('draw', { x, y, userId, color, size });
+    socket.on('draw', ({ start, end, color, size, sessionId }) => {
+      socket.broadcast.to(sessionId).emit('draw', { start, end, color, size });
     });
 
     socket.on('stopDrawing', (userId) => {
       drawUsers.delete(userId);
-
-      // Update alert when there are no users drawing
-      const remainingUsers = drawUsers.size;
-      io.emit('alert', {message: `${remainingUsers} user${remainingUsers !== 1 ? 's' : ''} currently drawing`});
       socket.broadcast.emit('stopDrawing', userId);
     })
   
@@ -70,7 +67,9 @@ io.on("connection", (socket) => {
     socket.on('disconnect', () => {
       console.log("User Disconnected!");
       drawUsers.delete(socket.id);
-      io.emit('alert', {message: `${drawUsers.size} user${drawUsers.size > 1 ? 's' : ''} connected`});
+      socket.rooms.forEach(room => {
+        io.to(room).emit('userLeft', socket.id);
+      })
     });
 
     // socket.on('styleChange', (info) => {
