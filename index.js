@@ -63,10 +63,16 @@ io.on("connection", (socket) => {
       socket.broadcast.emit('stopDrawing', userId);
     })
 
-    socket.on('menuAction', (data)=>{
-      socket.to(data.sessionId).emit('menuAction', data);
-    })
-  
+    socket.on('menuAction', (data) => {
+      if (!data || !data.sessionId) return;
+      socket.to(data.sessionId).emit('menuAction', {
+        menuObject: data.menuObject,
+        actionObject: data.actionObject,
+        userId: socket.id,
+        timestamp: Date.now()
+      });
+    });
+
     socket.on('changeConfig', ({ sessionId, ...config }) => {
       socket.broadcast.to(sessionId).emit('changeConfig', config);
     })
