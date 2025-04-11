@@ -38,17 +38,24 @@ io.on("connection", (socket) => {
     socket.on('joinSession', (sessionId) => {
       socket.join(sessionId);
       socket.sessionId = sessionId;
-      drawUsers.add(socket.id);
-      // Send the update only to the session room
-      io.to(sessionId).emit('userJoined', socket.id)
-    })
+      
+      io.to(sessionId).emit('userJoined', {
+        userId: socket.id,
+        timestamp: Date.now()
+      });
+      
+      socket.to(sessionId).emit('requestCanvasState');
+    });
 
     socket.on('startPosition', (userId) => {
       socket.broadcast.emit('startPosition', userId)
     })
   
     socket.on('draw', (data) => {
-      socket.to(data.sessionId).emit('draw', data);
+      socket.to(data.sessionId).emit('draw', {
+        ...data,
+        userId: socket.id
+      });
     });
 
     socket.on('stopDrawing', (userId) => {
