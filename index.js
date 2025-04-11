@@ -37,6 +37,7 @@ io.on("connection", (socket) => {
   
     socket.on('joinSession', (sessionId) => {
       socket.join(sessionId);
+      socket.sessionId = sessionId;
       drawUsers.add(socket.id);
       // Send the update only to the session room
       io.to(sessionId).emit('userJoined', socket.id)
@@ -46,13 +47,17 @@ io.on("connection", (socket) => {
       socket.broadcast.emit('startPosition', userId)
     })
   
-    socket.on('draw', ({ start, end, color, size, sessionId }) => {
-      socket.broadcast.to(sessionId).emit('draw', { start, end, color, size });
+    socket.on('draw', (data) => {
+      socket.to(data.sessionId).emit('draw', data);
     });
 
     socket.on('stopDrawing', (userId) => {
       drawUsers.delete(userId);
       socket.broadcast.emit('stopDrawing', userId);
+    })
+
+    socket.on('menuAction', (data)=>{
+      socket.to(data.sessionId).emit('menuAction', data);
     })
   
     socket.on('changeConfig', ({ sessionId, ...config }) => {
@@ -66,10 +71,10 @@ io.on("connection", (socket) => {
     
     socket.on('disconnect', () => {
       console.log("User Disconnected!");
+      if (socket.sessionId) {
+        socket.to(socket.sessionId).emit('userLeft', socket.id);
+      }
       drawUsers.delete(socket.id);
-      socket.rooms.forEach(room => {
-        io.to(room).emit('userLeft', socket.id);
-      })
     });
 
     // socket.on('styleChange', (info) => {
