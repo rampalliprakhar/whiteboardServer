@@ -80,9 +80,9 @@ io.on("connection", (socket) => {
     })
 
     socket.on('changeBackground', ({ sessionId, ...info }) => {
-      console.log('Changed background color: ', info)
-      socket.broadcast.to(sessionId).emit('changeBackground', info)
-    })
+      console.log('Changed background color: ', info);
+      io.to(sessionId).emit('changeBackground', info);
+    });
 
     socket.on('imagePaste', (data) => {
       socket.to(data.sessionId).emit('imagePaste', {
