@@ -81,6 +81,16 @@ io.on("connection", (socket) => {
       console.log('Changed background color: ', info)
       socket.broadcast.to(sessionId).emit('changeBackground', info)
     })
+
+    socket.on('imagePaste', (data) => {
+      socket.to(data.sessionId).emit('imagePaste', {
+        imageData: data.imageData,
+        position: data.position,
+        dimensions: data.dimensions,
+        userId: socket.id,
+        timestamp: data.timestamp
+      });
+    });
     
     socket.on('disconnect', () => {
       console.log("User Disconnected!");
