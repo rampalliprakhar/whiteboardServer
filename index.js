@@ -15,10 +15,12 @@ app.use(cors({
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  transports: ['websocket'],
   cors: {
-    origin: allowedOrigin
+    origin: allowedOrigin,
+    methods: ['GET', 'POST'],
+    credentials: true,
   },
+  transports: ['websocket', 'polling'],
   pingTimeout: 60000,
   connectTimeout: 60000,
   reconnection: true,
