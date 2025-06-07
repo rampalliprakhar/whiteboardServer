@@ -1,1 +1,52 @@
-This is the backend part of the whiteboard application involving the use of socket.io
+# Whiteboard Server
+
+A real-time collaborative whiteboard backend server built with Socket.IO, enabling synchronized drawing capabilities across multiple clients.
+
+## Features
+
+- Real-time drawing synchronization
+- WebSocket communication using Socket.IO
+- Multi-user support
+- Live collaboration capabilities
+
+## Technologies
+
+- Node.js
+- Socket.IO
+- Express.js
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm (Node Package Manager)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/rampalliprakhar/whiteboardServer.git
+```
+
+2. Install dependencies:
+
+```bash
+cd whiteboardServer && npm install
+```
+
+3. Start the server:
+
+```bash
+nodemon index
+```
+
+The server will start running on `http://localhost:3000` by default.
+
+## API Documentation
+
+The server handles the following Socket.IO events:
+
+- `connection`: Establishes new client connections
+- `draw`: Handles drawing events from clients
+- `disconnect`: Manages client disconnections
